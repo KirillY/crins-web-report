@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Homepage Basic Tests', () => {
+test.describe('01 - Homepage Basic Tests', () => {
   test('homepage loads successfully', async ({ page }) => {
     const response = await page.goto('/');
 

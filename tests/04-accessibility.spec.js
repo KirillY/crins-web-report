@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Accessibility Tests', () => {
+test.describe('04 - Accessibility Tests', () => {
   test('page has language attribute', async ({ page }) => {
     await page.goto('/');
 

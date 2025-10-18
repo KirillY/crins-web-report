@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Navigation Tests', () => {
+test.describe('02 - Navigation Tests', () => {
   test('main navigation links are present', async ({ page }) => {
     await page.goto('/');
 

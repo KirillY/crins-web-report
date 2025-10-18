@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Contact Form Tests', () => {
+test.describe('03 - Contact Form Tests', () => {
   test('contact form is visible', async ({ page }) => {
     await page.goto('/');
 
