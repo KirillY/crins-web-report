@@ -59,23 +59,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
         fi
 
-        echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Download the following artifacts to view detailed results:" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "1. **playwright-report** - Interactive HTML report" >> $GITHUB_STEP_SUMMARY
-        echo "   - Download and extract the archive" >> $GITHUB_STEP_SUMMARY
-        echo "   - Open \`index.html\` in your browser" >> $GITHUB_STEP_SUMMARY
-        echo "   - View test results, screenshots, and traces" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "2. **playwright-results** - Raw test results and screenshots" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-
-        echo "## 🧪 Test Suites" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        ls -lh tests/*.spec.js | awk '{print $9}' | xargs -I {} basename {}
-        echo '```' >> $GITHUB_STEP_SUMMARY
-
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4
       if: always()
