@@ -45,9 +45,9 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
 
         if [ -f test-output.log ]; then
-          PASSED=$(grep -o "passed" test-output.log | wc -l || echo "0")
-          FAILED=$(grep -o "failed" test-output.log | wc -l || echo "0")
-          TOTAL=$((PASSED + FAILED))
+          PASSED=$(grep -oE "[0-9]+ passed" test-output.log | tail -1 | grep -oE "[0-9]+" || echo "0")
+          FAILED=$(grep -oE "[0-9]+ failed" test-output.log | tail -1 | grep -oE "[0-9]+" || echo "0")
+          TOTAL=$((${PASSED:-0} + ${FAILED:-0}))
 
           echo "## 📊 Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
