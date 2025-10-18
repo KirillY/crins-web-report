@@ -7,6 +7,11 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   test:
     timeout-minutes: 60
@@ -29,30 +34,54 @@ jobs:
       run: npx playwright install --with-deps chromium
 
     - name: Run Playwright tests
-      run: npm test
+      id: playwright
+      run: npm test 2>&1 | tee test-output.log
       continue-on-error: true
 
-    - name: Generate test summary
+    - name: Generate comprehensive test summary
       if: always()
       run: |
-        echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "# 🎭 Playwright Test Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
 
-        if [ -f playwright-report/index.html ]; then
-          echo "✅ Test report generated successfully" >> $GITHUB_STEP_SUMMARY
+        if [ -f test-output.log ]; then
+          PASSED=$(grep -o "passed" test-output.log | wc -l || echo "0")
+          FAILED=$(grep -o "failed" test-output.log | wc -l || echo "0")
+          TOTAL=$((PASSED + FAILED))
+
+          echo "## 📊 Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📊 **Report Details:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Test run completed" >> $GITHUB_STEP_SUMMARY
-          echo "- HTML report available in artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- Download and open \`index.html\` to view full results" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "⚠️ Test report not found" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total** | **$TOTAL** |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "## ⚠️ Failed Tests" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            grep "×" test-output.log || echo "No failure details available"
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
         fi
 
+        echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Test Files" >> $GITHUB_STEP_SUMMARY
+        echo "Download the following artifacts to view detailed results:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "1. **playwright-report** - Interactive HTML report" >> $GITHUB_STEP_SUMMARY
+        echo "   - Download and extract the archive" >> $GITHUB_STEP_SUMMARY
+        echo "   - Open \`index.html\` in your browser" >> $GITHUB_STEP_SUMMARY
+        echo "   - View test results, screenshots, and traces" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "2. **playwright-results** - Raw test results and screenshots" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        echo "## 🧪 Test Suites" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
-        ls -la tests/ >> $GITHUB_STEP_SUMMARY
+        ls -lh tests/*.spec.js | awk '{print $9}' | xargs -I {} basename {}
         echo '```' >> $GITHUB_STEP_SUMMARY
 
     - name: Upload Playwright Report
@@ -79,10 +108,14 @@ jobs:
         publish_dir: ./playwright-report
         destination_dir: reports/${{ github.run_number }}
 
-    - name: Comment Report URL
+    - name: Add Report URL to Summary
       if: always() && github.ref == 'refs/heads/main'
       run: |
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "---" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "📄 **Live Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
+        echo "## 🌐 Interactive Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📄 **Live HTML Report:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/${{ github.run_number }}/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "> Note: It may take a few minutes for GitHub Pages to deploy" >> $GITHUB_STEP_SUMMARY
